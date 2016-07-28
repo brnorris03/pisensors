@@ -5,26 +5,6 @@ import mqttutils
 
 debug = False
 
-import grove_rgb_lcd 
-class displayThread(threading.Thread):
-    def __init__(self, threadID, name, delay):
-        threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.name = name
-	self.delay = delay
-    def run(self):
-        print "Starting " + self.name
-        # Get lock to synchronize threads
-        threadLock.acquire()
-        display(self.name, self.counter, 3)
-        # Free lock to release next thread
-        threadLock.release()
-
-def display(threadName, message, delay=1):
-	while True:
-		grove_rgb_lcd.setText("%s" %  message)
-		os.sleep(delay)
-
 # Connect the Grove Loudness Sensor to analog port A0
 # SIG,NC,VCC,GND
 loudness_sensor = 0    # A0
@@ -48,7 +28,6 @@ import shock
 from netifaces import interfaces, ifaddresses, AF_INET
 address = ifaddresses('wlan0').setdefault(AF_INET, [{'addr':'No IP addr'}])[0]['addr']
 print("%s Sensors starting up" % datetime.datetime.now().isoformat())
-display(
 
 while True:
     try:
@@ -67,10 +46,7 @@ while True:
 
 	debugmsg = "sh=%d;loud=%d\n%.1f,%.1f,%.1f" %(shock, loudness, axes['x'], axes['y'], axes['z'])
 	if debug: print("Sending MQTT message: %s" % msg)
-	grove_rgb_lcd.setText("%s\n%s" % (address,tstamp))
-        time.sleep(.3)
-	grove_rgb_lcd.setText(debugmsg)
-        time.sleep(.3)
+        messages = ['\n'.join([address,tstamp]), debugmsg]
         #os.system('mosquitto_pub -h brix.d.cs.uoregon.edu -p 8100 -t sensors/pipe -m "%s"' % msg)
 
     except IOError:
