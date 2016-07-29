@@ -1,13 +1,23 @@
 import paho.mqtt.client as mqtt
 
-def start_mqtt():
-  client = mqtt.Client("shock_pub")
-  client.connect_async("brix.d.cs.uoregon.edu",8100)
-  client.loop_start()
-  return client
+msg="Initialized MQTT connection"
 
-def send_msg(client, msg):
-  client.publish("sensor/shock", msg)
+def start_mqtt():
+    client = mqtt.Client("pipe_pub")
+    client.connect("brix.d.cs.uoregon.edu",8100,60)
+    client.on_connect = on_connect
+    client.loop_forever()
+    return client
+
+def on_connect(client, userdata, rc):
+    print("Connected with result code " + str(rc))
+    if rc != 0: 
+        client.reconnect()
+        
+def send_msg(client, userdata, flags, rc):
+    global msg
+    print("in send_msg")
+    client.publish("sensors/newpipe", msg)
 
 def end_mqtt(client):
-  client.disconnect()
+    client.disconnect()
